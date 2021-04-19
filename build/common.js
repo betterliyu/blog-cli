@@ -16,7 +16,7 @@ exports.getPosts = (folder) => {
       let stat = fs.statSync(fPath);
       if (stat.isDirectory()) {
         _find(fPath);
-      } else if (stat.isFile()) {
+      } else if (stat.isFile() && path.extname(file) == '.md') {
         let fileContent = fs.readFileSync(fPath);
 
         const fileData = matter(fileContent.toString());

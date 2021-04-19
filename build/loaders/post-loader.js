@@ -34,7 +34,7 @@ module.exports = function (source) {
   remark()
     .use(recommended)
     .use(html)
-    .process(source, (err, file) => {
+    .process(fileData.content, (err, file) => {
       if (err) {
         throw new Error(err);
       }
@@ -46,25 +46,38 @@ module.exports = function (source) {
 
       const layout = getLayoutFilePath(post.meta.layout)
       const layoutUrl = loaderUtils.stringifyRequest(this, layout);
+      let postStr = JSON.stringify(post);
+      const srcReg = RegExp('src=\\\\"(.*?)\\\\"', 'g');
+      let replacement;
+      let importCode = [];
+      let srcIndex = 0;
+      while ((replacement = srcReg.exec(postStr)) !== null) {
+        const request = replacement[1];
+        importCode.push(`import IMPORT_SRC_REPLACEMENT_INDEX_${srcIndex} from '${request}';`);
+        postStr = postStr.slice(0, replacement.index) + `src=\\"{IMPORT_SRC_REPLACEMENT_INDEX_${srcIndex}}\\"` + postStr.slice(srcReg.lastIndex);
+        srcIndex++;
+      }
+      let content = [...importCode].join('\n');
       if (options.isSSR) {
-        content = `
+        content += `
           import React from 'react';
           import Post from ${layoutUrl}
           export {
             Post,
-            post: ${JSON.stringify(post)}
+            post: ${postStr}
           } 
         `;
       } else {
-        content = `
+        content += `
           import React from 'react';
-          import { hydrate } from 'react-dom';
+          import { ${options.development ? 'render' : 'hydrate'} } from 'react-dom';
           import Post from ${layoutUrl}
+
+          const post = ${postStr};
           
-          hydrate(<Post {...${JSON.stringify(post)}}/>, document.getElementById('app'));
+          ${options.development ? 'render' : 'hydrate'}(<Post {...post}/>, document.getElementById('app'));
         `;
       }
-
       callback(null, content);
     })
 

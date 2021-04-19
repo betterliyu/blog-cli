@@ -5,6 +5,9 @@
   "additionalProperties": {
     "isSSR": {
       "type": "boolean"
+    },
+    "development": {
+      "type": "boolean"
     }
   }
 }

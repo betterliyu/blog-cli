@@ -1,5 +1,4 @@
 const path = require('path');
-const { DefinePlugin } = require('webpack');
 const config = require('./config');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -9,11 +8,13 @@ const { entry, htmlPlugins } = buildPosts();
 module.exports = {
   mode: "development",
   entry: {
+    // index: path.resolve(__dirname, '../src/index.tsx'),
     ...entry
   },
   output: {
     path: path.resolve(__dirname, `../dist`),
-    filename: 'js/[name].js'
+    filename: 'js/[name].js',
+    clean: true,
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx']
@@ -33,8 +34,13 @@ module.exports = {
           {
             loader: path.resolve(__dirname, './loaders/post-loader.js'),
             options: {
+              development: true
             }
           }]
+      },
+      {
+        test: /\.png$/,
+        type: 'asset/inline',
       },
     ]
   },
@@ -42,10 +48,11 @@ module.exports = {
     ...htmlPlugins,
   ],
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         common: {
-          chunks: "initial", 
+          chunks: "initial",
           name: "common",
           minChunks: 2,
           priority: 0,
