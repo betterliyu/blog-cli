@@ -1,5 +1,7 @@
 import React from 'react';
 
 export default function Header() {
-  return <div>Header</div>;
+  return (<div>
+    <header>This is a Header</header>
+  </div>);
 };

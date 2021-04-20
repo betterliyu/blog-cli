@@ -1,13 +1,12 @@
 {
   "type": "object",
-  "properties": {
-  },
+  "properties": {},
   "additionalProperties": {
-    "isSSR": {
+    "SSRScript": {
       "type": "boolean"
     },
-    "development": {
-      "type": "boolean"
+    "staticOutput": {
+      "type": "string"
     }
   }
 }

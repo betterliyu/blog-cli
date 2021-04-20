@@ -9,6 +9,7 @@ exports.buildPosts = () => {
   const posts = getPosts(config.postFolder);
   const htmlPlugins = [];
   const entry = {};
+  const outputFiles = [];
 
   Object.keys(posts).forEach(fileName => {
     // 为每个 post 文件都添加一个 entry js 文件和 html 文件
@@ -24,12 +25,13 @@ exports.buildPosts = () => {
       template: config.htmlTemplate,
       chunks: [chunkName]
     }));
-
+    outputFiles.push(`post/${relativePath.replace(path.extname(relativePath), '.js')}`);
   });
 
   return {
     entry,
     htmlPlugins,
+    outputFiles,
   };
 };
 
