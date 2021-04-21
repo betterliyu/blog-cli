@@ -1,6 +1,6 @@
 const path = require('path');
-const { buildPosts } = require('./utils');
-const { entry, htmlPlugins } = buildPosts();
+const { buildConfig } = require('./utils');
+const { entry, htmlPlugins } = buildConfig();
 
 module.exports = {
   entry: {
@@ -19,7 +19,7 @@ module.exports = {
       {
         test: /\.tsx?$/,
         loader: "babel-loader",
-        exclude: /node_modules/
+        exclude: [/node_modules/]
       },
       {
         test: /\.png$/,

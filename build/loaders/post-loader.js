@@ -14,12 +14,12 @@ const schema = require('./post-loader-schema.json');
 const srcReg = /(<img.*?src=\\")(.*?)(\\")/;
 
 const getLayoutFilePath = (layout = config.defaultLayout) => {
-  const layouts = fs.readdirSync(config.layoutFolder);
+  const layouts = fs.readdirSync(config.layoutDir);
   let file = layouts.find(fileName => ['.js', '.jsx', '.ts', '.tsx'].some(ext => fileName === layout + ext));
   if (!file) {
     throw new Error(`layout ${layout} is not found!`)
   }
-  return path.resolve(config.layoutFolder, file);
+  return path.resolve(config.layoutDir, file);
 };
 
 module.exports = function (source) {
@@ -32,6 +32,7 @@ module.exports = function (source) {
   });
 
   const fileData = matter(source);
+  const { blog, SSRScript, staticOutput } = options;
 
   remark()
     .use(recommended)
@@ -49,6 +50,7 @@ module.exports = function (source) {
       const layout = getLayoutFilePath(post.meta.layout)
       const layoutUrl = loaderUtils.stringifyRequest(this, layout);
       let postStr = JSON.stringify(post);
+      let blogStr = JSON.stringify(blog);
       const matches = postStr.matchAll(RegExp(srcReg, 'g'));
       let importCode = [];
       let srcIndex = 0;
@@ -62,7 +64,10 @@ module.exports = function (source) {
         }
       }
       let content = [...importCode].join('\n');
-      if (options.SSRScript) {
+      if (SSRScript) {
+        const relativePath = path.relative(config.postDir, this.resourcePath);
+        let htmlPath = relativePath.replace(path.extname(relativePath), '.html');
+        htmlPath = path.resolve(staticOutput, htmlPath);
         content += `
           import path from 'path';
           import fs from 'fs-extra';
@@ -70,15 +75,13 @@ module.exports = function (source) {
           import ReactDomServer from 'react-dom/server';
           import Post from ${layoutUrl}
           
-          let relativePath = path.relative(${JSON.stringify(config.postFolder)}, ${JSON.stringify(this.resourcePath)});
-
           // 获取对应 layout 组件，渲染react dom 
           const post = ${postStr};
-          const dmoStr = ReactDomServer.renderToString(<Post {...post} />);
+          const blog = ${blogStr};
+          const dmoStr = ReactDomServer.renderToString(<Post post={post} blog={blog}/>);
         
           // 替换根节点内容  
-          const relativeHtmlPath = relativePath.replace(path.extname(relativePath), '.html');
-          const htmlPath = path.resolve(${JSON.stringify(options.staticOutput)}, relativeHtmlPath);
+          const htmlPath = ${JSON.stringify(htmlPath)};
           let html = fs.readFileSync(htmlPath).toString();
           html = html.replace('{{BLOG_CONTENT}}', dmoStr);
         
@@ -94,8 +97,9 @@ module.exports = function (source) {
 
           const App = ${this.hot ? `hot(Post)` : `Post`};
           const post = ${postStr};
+          const blog = ${blogStr};
           
-          ${renderMethod}(<App {...post}/>, document.getElementById('app'));
+          ${renderMethod}(<App post={post} blog={blog}/>, document.getElementById('app'));
         `;
       }
       callback(null, content);

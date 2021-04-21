@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "dev": "webpack serve --config ./build/webpack.dev.js",
+    "build-dev": "webpack --config ./build/webpack.dev.js",
     "build": "webpack --config ./build/webpack.prod.js",
     "ssr": "webpack --config ./build/webpack.ssr.js",
     "bundle": "npm run build && npm run ssr"

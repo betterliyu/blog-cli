@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {},
+  "additionalProperties": {
+    "SSRScript": {
+      "type": "boolean"
+    },
+    "staticOutput": {
+      "type": "string"
+    }
+  }
+}

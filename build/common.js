@@ -37,3 +37,8 @@ exports.getPosts = (folder) => {
 
   return mds;
 };
+
+exports.getPages = (folder) => {
+  const files = fs.readdirSync(folder);
+  return files.filter(file => ['.jsx', '.tsx', '.js', '.ts'].includes(path.extname(file)))
+};

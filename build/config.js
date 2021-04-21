@@ -2,7 +2,8 @@ const path = require('path');
 
 module.exports = {
   defaultLayout: 'Post',
-  postFolder: path.resolve(__dirname, '../src/posts'),
-  layoutFolder: path.resolve(__dirname, '../src/layout'),
+  postDir: path.resolve(__dirname, '../posts'),
+  layoutDir: path.resolve(__dirname, '../src/layouts'),
+  pageDir: path.resolve(__dirname, '../src/pages'),
   htmlTemplate: path.resolve(__dirname, '../index.html'),
 }

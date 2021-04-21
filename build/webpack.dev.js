@@ -2,33 +2,51 @@ const path = require('path');
 const { merge } = require('webpack-merge');
 const config = require('./config');
 const webpackCommon = require('./webpack.common');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { getBlog } = require('./utils');
 
 const postLoader = path.resolve(__dirname, './loaders/post-loader.js');
+const pageLoader = path.resolve(__dirname, './loaders/page-loader.js');
+
+const blog = getBlog();
 
 module.exports = merge(webpackCommon, {
   mode: "development",
-  entry: {
-    index: path.resolve(__dirname, '../src/index.tsx')
-  },
   module: {
     rules: [
       {
+        test: /\.tsx?$/,
+        include: [config.pageDir],
+        use: [
+          {
+            loader: pageLoader,
+            options: {
+              blog
+            }
+          }
+        ]
+      },
+      {
         test: /\.md?$/,
-        include: [config.postFolder],
+        include: [config.postDir],
         use: [
           { loader: "babel-loader" },
-          { loader: postLoader }
+          {
+            loader: postLoader, options: {
+              blog
+            }
+          }
         ]
       },
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         common: {
           chunks: "initial",
           name: "common",
+          minChunks: 2,
           priority: 0,
           reuseExistingChunk: true,
         },
@@ -41,12 +59,4 @@ module.exports = merge(webpackCommon, {
     port: 8000,
     hot: true,
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      // 按照 post 文件结构生成对应的 html 文件夹结构
-      filename: 'index.html',
-      template: config.htmlTemplate,
-      chunks: ['index']
-    })
-  ]
 });
