@@ -12,7 +12,7 @@ export default function Page({ blog }: { blog: IBlog }) {
             <h4>{c}</h4>
           </li>
           {
-            blog.posts?.filter((post: IPostLink) => post.meta?.category?.includes(c)).map(post => {
+            blog.posts?.filter((post: IPostLink) => post.meta?.categories?.includes(c)).map(post => {
               return <li key={post.meta?.title}><a href={post.link}>{post.meta?.title}</a></li>
             })
           }

@@ -3,7 +3,9 @@ const path = require('path');
 
 const loaderUtils = require('loader-utils');
 const { validate } = require('schema-utils');
+const externalLinks = require('remark-external-links');
 const html = require('remark-html');
+const highlight = require('remark-highlight.js');
 const matter = require('gray-matter');
 const remark = require('remark');
 const recommended = require('remark-preset-lint-recommended');
@@ -32,10 +34,19 @@ module.exports = function (source) {
   });
 
   const fileData = matter(source);
+  if (typeof fileData.tags === 'string') {
+    fileData.tags = [fileData.tags];
+  }
+  if (typeof fileData.categories === 'string') {
+    fileData.categories = [fileData.categories];
+  }
+
   const { blog, SSRScript, staticOutput } = options;
 
   remark()
     .use(recommended)
+    .use(externalLinks, { target: "_blank" })
+    .use(highlight)
     .use(html)
     .process(fileData.content, (err, file) => {
       if (err) {
@@ -44,7 +55,7 @@ module.exports = function (source) {
 
       const post = {
         meta: fileData.data,
-        content: file.contents,
+        content: decodeURI(file.contents),
       };
 
       const layout = getLayoutFilePath(post.meta.layout)
@@ -53,16 +64,23 @@ module.exports = function (source) {
       let blogStr = JSON.stringify(blog);
       const matches = postStr.matchAll(RegExp(srcReg, 'g'));
       let importCode = [];
-      let srcIndex = 0;
+      let srcIndex = -1;
+      let fragments = [];
       for (match of matches) {
         if (loaderUtils.isUrlRequest(match[2])) {
-          const from = match.index;
-          const request = loaderUtils.urlToRequest(match[2]);
-          importCode.push(`import IMPORT_SRC_REPLACEMENT_INDEX_${srcIndex} from '${request}';`);
-          postStr = postStr.slice(0, from) + postStr.slice(from).replace(srcReg, `$1"+IMPORT_SRC_REPLACEMENT_INDEX_${srcIndex}+"$3`);
           srcIndex++;
+          const from = match.index + match[1].length;
+          const request = loaderUtils.urlToRequest(match[2]);
+          fragments[srcIndex] = [from, from + match[2].length];
+          importCode.push(`import IMPORT_SRC_REPLACEMENT_INDEX_${srcIndex} from '${request}';`);
         }
       }
+      fragments.reverse().forEach((f, i) => {
+        postStr = postStr.slice(0, f[0])
+          + `"+IMPORT_SRC_REPLACEMENT_INDEX_${srcIndex - i}+"`
+          + postStr.slice(f[1])
+      })
+
       let content = [...importCode].join('\n');
       if (SSRScript) {
         const relativePath = path.relative(config.postDir, this.resourcePath);

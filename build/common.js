@@ -1,10 +1,7 @@
 const path = require('path');
 const fs = require('fs-extra');
 
-const html = require('remark-html');
 const matter = require('gray-matter');
-const remark = require('remark');
-const recommended = require('remark-preset-lint-recommended');
 
 exports.getPosts = (folder) => {
   const mds = {};
@@ -20,16 +17,16 @@ exports.getPosts = (folder) => {
         let fileContent = fs.readFileSync(fPath);
 
         const fileData = matter(fileContent.toString());
-
-        remark()
-          .use(recommended)
-          .use(html)
-          .process(fileData.content, (err, file) => {
-            mds[fPath] = {
-              meta: fileData.data,
-              content: file.contents,
-            };
-          })
+        if (typeof fileData.tags === 'string') {
+          fileData.tags = [fileData.tags];
+        }
+        if (typeof fileData.categories === 'string') {
+          fileData.categories = [fileData.categories];
+        }
+        mds[fPath] = {
+          meta: fileData.data,
+          content: fileData.content
+        };
       }
     })
   }

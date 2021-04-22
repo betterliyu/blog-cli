@@ -9,7 +9,7 @@ const pageLoader = path.resolve(__dirname, './loaders/page-loader.js');
 
 let publicPath = '';
 publicPath = 'https://www.betterliyu.site/';
-publicPath = 'http://127.0.0.1:5500/dist/';
+// publicPath = 'http://127.0.0.1:5500/dist/';
 
 const blog = getBlog(publicPath);
 

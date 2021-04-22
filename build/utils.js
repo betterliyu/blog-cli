@@ -47,8 +47,12 @@ const buildPosts = () => {
     // 注入 meta到 blog
     const { meta } = postFiles[fileName]
     posts.push({ link: ('post/' + htmlPath).replace(/\\/g, '/'), meta: meta });
-    tags = Array.from(new Set([...tags, ...(meta.tags || [])]));
-    categories = Array.from(new Set([...categories, ...(meta.category || [])]));
+    if (meta.tags) {
+      tags = Array.from(new Set([...tags, ...meta.tags]));
+    }
+    if (meta.categories) {
+      categories = Array.from(new Set([...categories, ...meta.categories]));
+    }
   });
 
   blog = {
@@ -109,3 +113,4 @@ exports.buildConfig = () => {
     ]
   }
 }
+

@@ -1,6 +1,6 @@
 type Meta = {
   title: string,
-  category: string,
+  categories: string[],
   tags: string[],
   Layout?: string,
   date: string,
